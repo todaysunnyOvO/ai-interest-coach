@@ -54,6 +54,10 @@
 ##  📂 项目结构
 
 .
+## 📂 项目结构
+
+```text
+.
 ├── api/
 │   └── chat.ts            # BFF层核心：处理流式转发、思维链整形、鉴权
 ├── src/
@@ -65,6 +69,7 @@
 │   │   └── storage.ts     # 数据层：LocalStorage 封装
 │   └── routes/            # 页面路由入口
 └── modern.config.ts       # 框架配置文件
+```
 
 
 
