@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Loader2 } from 'lucide-react';
 import styles from './chat.module.css';
 import { Message } from '../../utils/storage';
 
@@ -13,20 +14,25 @@ export const ChatMessage: React.FC<Props> = ({ message }) => {
   // Simple logic to separate thinking process from content
   let thinkContent = '';
   let mainContent = message.content;
+  let isSearching = false;
 
   if (isAssistant) {
-    // Match <think>...</think> or <think>... (end of string)
-    const thinkMatch = message.content.match(/<think>([\s\S]*?)(?:<\/think>|$)/);
-    if (thinkMatch) {
-      thinkContent = thinkMatch[1];
-      // 只有当 </think> 结束标签存在时，才从 mainContent 中移除 think 块
-      // 否则，我们在流式传输过程中可能会丢失部分内容显示
-      if (message.content.includes('</think>')) {
-          mainContent = message.content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
-      } else {
-          // 还在思考中，不显示 mainContent (或者显示为空，等待思考结束)
-          mainContent = '';
-      }
+    // 1. Extract Thinking Process
+    const thinkRegex = /<think>([\s\S]*?)(?:<\/think>|$)/g;
+    const matches = [...message.content.matchAll(thinkRegex)];
+
+    if (matches.length > 0) {
+      thinkContent = matches.map(m => m[1]).join('\n\n---\n\n');
+      // Remove thinking blocks from main content
+      mainContent = message.content.replace(thinkRegex, '').trim();
+    }
+
+    // 2. Extract Search Status
+    const searchRegex = /\*正在搜索相关信息\.\.\.\*/g;
+    if (searchRegex.test(mainContent)) {
+      isSearching = true;
+      // Remove search status text from main content
+      mainContent = mainContent.replace(searchRegex, '').trim();
     }
   }
 
@@ -42,10 +48,17 @@ export const ChatMessage: React.FC<Props> = ({ message }) => {
             <ReactMarkdown>{thinkContent}</ReactMarkdown>
           </div>
         )}
+
+        {isSearching && (
+          <div className={styles.searchStatus}>
+            <Loader2 className="animate-spin" size={16} />
+            <span>正在联网搜索最新信息...</span>
+          </div>
+        )}
+
         {mainContent && <ReactMarkdown>{mainContent}</ReactMarkdown>}
-        {!mainContent && !thinkContent && isAssistant && <span className="animate-pulse">...</span>}
+        {!mainContent && !thinkContent && !isSearching && isAssistant && <span className="animate-pulse">...</span>}
       </div>
     </div>
   );
 };
-

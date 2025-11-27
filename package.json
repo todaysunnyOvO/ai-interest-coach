@@ -28,6 +28,7 @@
     "@modern-js/plugin-express": "^2.68.20",
     "@modern-js/plugin-server": "^2.68.20",
     "@modern-js/runtime": "2.68.20",
+    "@tavily/core": "^0.5.13",
     "lucide-react": "^0.554.0",
     "openai": "^6.9.1",
     "react": "^18.3.1",
